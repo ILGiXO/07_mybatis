@@ -1,0 +1,81 @@
+package com.work.springmybatis.config;
+
+import com.work.springmybatis.section01.factorybean.MenuDTO;
+import com.work.springmybatis.section01.factorybean.MenuMapper;
+import com.zaxxer.hikari.HikariDataSource;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.mybatis.spring.SqlSessionFactoryBean;
+import org.mybatis.spring.SqlSessionTemplate;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration //Bean 등록 + 내부 메서드 모두 실행해서 설정 등록
+public class MybatisConfig {
+
+  @Value("${spring.datasource.driver-class-name}")
+  private String driverClassName;
+
+  @Value("${spring.datasource.jdbc-url}")
+  private String jdbcUrl;
+
+  @Value("${spring.datasource.username}")
+  private String username;
+
+  @Value("${spring.datasource.password}")
+  private String password;
+
+
+
+  @Bean
+  public HikariDataSource dataSource(){
+    HikariDataSource dataSource = new HikariDataSource();
+
+    /* HikariCP 설정 추가*/
+    dataSource.setDriverClassName(driverClassName);
+    dataSource.setJdbcUrl(jdbcUrl);
+    dataSource.setUsername(username);
+    dataSource.setPassword(password);
+
+    /* 커넥션 풀 설정*/
+
+    /* 커넥션 획득 대기 시간*/
+    dataSource.setConnectionTimeout(30000); // 30초
+
+    /* 커넥션 동시에 유지 가능한 최대 커넥션 개수*/
+    dataSource.setMaximumPoolSize(5);
+    /* 사용하지 않는 커넥션 유휴 시간*/
+    dataSource.setIdleTimeout(60000);
+
+    /* 커넥션의 최대 생명주기(오래된 커넥션을 주기적으로 교체)*/
+    dataSource.setMaxLifetime(1800000); // 30분
+
+
+
+
+    return dataSource;
+  }
+
+  @Bean
+  public SqlSessionFactory sqlSessionFactory() throws Exception {
+
+    org.apache.ibatis.session.Configuration configuration
+        = new org.apache.ibatis.session.Configuration();
+    configuration.getTypeAliasRegistry().registerAlias("MenuDTO", MenuDTO.class);
+    configuration.addMapper(MenuMapper.class);
+    configuration.setMapUnderscoreToCamelCase(true);
+
+    SqlSessionFactoryBean sqlSessionFactoryBean = new SqlSessionFactoryBean();
+    sqlSessionFactoryBean.setDataSource(dataSource());
+    sqlSessionFactoryBean.setConfiguration(configuration);
+
+    return sqlSessionFactoryBean.getObject();
+
+  }
+
+  @Bean
+  public SqlSessionTemplate sqlSessionTemplate() throws Exception {
+    return new SqlSessionTemplate(sqlSessionFactory());
+  }
+
+}

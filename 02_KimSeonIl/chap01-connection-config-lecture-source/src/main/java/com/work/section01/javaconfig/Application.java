@@ -31,9 +31,10 @@ public class Application {
     * - 사용이 끝난 커넥션은 반환 받음
     * */
     Environment environment = new Environment(
-        "dev", new JdbcTransactionFactory(), new PooledDataSource(DRIVER, URL, USER, PASSWORD)
+        "dev", new JdbcTransactionFactory()
+        , new PooledDataSource(DRIVER, URL, USER, PASSWORD)
     );
-    
+
     /* 2. Configuration 객체 생성
     *  - 마이바티스 전체 설정 정보를 담는 객체 */
     Configuration configuration = new Configuration(environment);
